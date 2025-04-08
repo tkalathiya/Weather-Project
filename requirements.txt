@@ -1,1 +1,5 @@
 fastapi[all]
+uvicorn
+numpy
+scikit-learn
+joblib
