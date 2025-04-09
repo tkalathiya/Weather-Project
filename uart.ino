@@ -2,8 +2,8 @@
 #include <WiFiClientSecure.h>
 #include <ESP8266HTTPClient.h>
 
-const char* ssid = "Home";
-const char* password = "JayShreeRamji";
+const char* ssid = "WIFI_USERNAMAE";
+const char* password = "WIFI_PASSWORD";
 
 int rainValue = 0;  // Global so it can be used after Serial input
 
@@ -24,24 +24,33 @@ void loop() {
     String input = Serial.readStringUntil('\n');
     input.trim(); // Clean up whitespace
 
-    if (input.startsWith("RAIN:")) {
-      rainValue = input.substring(5).toInt();
-      Serial.println("Received rain value: " + String(rainValue));
+    if (input.startsWith("DATA:")) {
+      input = input.substring(5); // Remove "DATA:"
+
+  int comma1 = input.indexOf(',');
+  int comma2 = input.indexOf(',', comma1 + 1);
+
+  if (comma1 > 0 && comma2 > comma1) {
+    float rainValue = input.substring(0, comma1).toFloat();
+    float temperature = input.substring(comma1 + 1, comma2).toFloat();
+    float humidity = input.substring(comma2 + 1).toFloat();
+
+    Serial.println("Received → Rain: " + String(rainValue) + ", Temp: " + String(temperature) + ", Hum: " + String(humidity));
 
       if (WiFi.status() == WL_CONNECTED) {
-        float precipitation = 50.0; // Example value
+        float temp = float(temperature); //  From Serial input
         float rainlevel = float(rainValue); // From Serial input
-        float humidity = 10.0; // Example value
+        float hum = float(humidity); // From Serial input
 
         String serverPath = "https://weather-project-3rpj.onrender.com/predict/?precipitation=" +
-                            String(precipitation) +
+                            String(temp) +
                             "&rain=" +
                             String(rainlevel) +
                             "&humidity=" +
-                            String(humidity);
+                            String(hum);
 
         WiFiClientSecure client;
-        client.setInsecure(); // ⚠️ Dev only
+        client.setInsecure();
 
         HTTPClient https;
         Serial.println("Requesting URL: " + serverPath);
@@ -69,6 +78,6 @@ void loop() {
       }
     }
   }
-
+}
   delay(100); // Small delay to avoid spamming loop
 }
